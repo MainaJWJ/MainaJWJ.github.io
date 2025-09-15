@@ -1,0 +1,31 @@
+{
+  "name": "Saturn",
+  "type": "planet",
+  "model": {
+    "file": "model/saturn/saturn.glb",
+    "scale": 0.756,
+    "initialRotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "position": {
+    "x": 600,
+    "y": 0,
+    "z": 0
+  },
+  "movement": {
+    "rotation": {
+      "axis": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "speed": 0.0234
+    }
+  },
+  "animation": {
+    "enabled": false
+  }
+}

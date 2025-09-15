@@ -52,7 +52,19 @@ const DESKTOP_ICONS = [
       height: 400,
       iconUrl: './image/calculator.png'
     }
+  },
+    {
+    id: 'flight',
+    title: 'flight',
+    iconUrl: './image/earth.png',
+    windowOptions: {
+      title: 'Flight',
+      iframeSrc: './app/flight/index.html',
+      width: 300,
+      height: 400,
+      iconUrl: './image/flight.png'
   }
+    }
 ];
 
 // 오른쪽 열 아이콘

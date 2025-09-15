@@ -1,0 +1,31 @@
+{
+  "name": "Jupiter",
+  "type": "planet",
+  "model": {
+    "file": "model/jupiter/jupiter.glb",
+    "scale": 1120,
+    "initialRotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "position": {
+    "x": 500,
+    "y": 0,
+    "z": 0
+  },
+  "movement": {
+    "rotation": {
+      "axis": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "speed": 0.0243
+    }
+  },
+  "animation": {
+    "enabled": false
+  }
+}

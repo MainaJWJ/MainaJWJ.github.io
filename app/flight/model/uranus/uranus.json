@@ -1,0 +1,31 @@
+{
+  "name": "Uranus",
+  "type": "planet",
+  "model": {
+    "file": "model/uranus/uranus.glb",
+    "scale": 401,
+    "initialRotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "position": {
+    "x": 700,
+    "y": 0,
+    "z": 0
+  },
+  "movement": {
+    "rotation": {
+      "axis": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "speed": 0.014
+    }
+  },
+  "animation": {
+    "enabled": false
+  }
+}

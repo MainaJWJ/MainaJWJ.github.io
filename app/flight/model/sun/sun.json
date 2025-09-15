@@ -1,0 +1,31 @@
+{
+  "name": "Sun",
+  "type": "star",
+  "model": {
+    "file": "model/sun/sun.glb",
+    "scale": 9.9,
+    "initialRotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "position": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "movement": {
+    "rotation": {
+      "axis": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "speed": 0.01
+    }
+  },
+  "animation": {
+    "enabled": false
+  }
+}

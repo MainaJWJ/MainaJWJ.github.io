@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Size Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #results { margin-top: 20px; }
+        .model-info { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        .model-name { font-weight: bold; }
+        .size-info { margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1>3D Model Size Checker for Solar System</h1>
+    <div id="status">Loading models and measuring sizes...</div>
+    <div id="results"></div>
+
+    <!-- Include Three.js and GLTFLoader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- Include our measurement script -->
+    <script src="measure_model_sizes.js"></script>
+</body>
+</html>

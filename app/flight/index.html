@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Flight Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main id="world"></main>
+
+    <!-- Include Three.js and required loaders -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- Include our custom modules -->
+    <script src="celestialBodyList.js"></script>
+    <script src="CelestialBodyManager.js"></script>
+    <script src="myShipControl.js"></script>
+    <script src="uiManager.js"></script>
+
+    <script type="module">
+        // --- 3D 그래픽 로직 시작 ---
+
+        // --- 1. 기본 구성 요소 생성 ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000);
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // --- 2. 조명 설정 ---
+        const ambientLight = new THREE.AmbientLight("#ffffff", 0.5);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xFFFFFF, 1);
+        pointLight.position.set(100, 100, 100);
+        scene.add(pointLight);
+
+        // --- 3. 초기화 및 애니메이션 루프 ---
+        const clock = new THREE.Clock();
+        let cameraMode = 'follow';
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'b' || event.key === 'B') {
+                cameraMode = cameraMode === 'follow' ? 'rear_view' : 'follow';
+            }
+        });
+
+        // 전역 변수
+        let celestialBodyManager;
+
+        // Initialize all modules
+        async function init() {
+            // UI 관리자 초기화
+            initUIManager();
+            
+            // 1. 천체 관리자 초기화 및 천체 로드
+            celestialBodyManager = new CelestialBodyManager(scene);
+            await celestialBodyManager.loadBodies(CELESTIAL_BODY_LIST);
+            console.log("Celestial bodies loaded.");
+
+            // 2. 우주선 컨트롤러 초기화
+            await initMyShipControl(scene, camera);
+            console.log("Spaceship controller initialized.");
+            
+            // 3. 애니메이션 루프 시작
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                const delta = clock.getDelta();
+                
+                // Update spaceship logic (movement, camera)
+                updateSpaceship(delta, camera, cameraMode);
+                
+                // Update spaceship animation
+                updateSpaceshipAnimation(delta);
+                
+                // Update celestial bodies (animations, orbits, rotations)
+                if (celestialBodyManager) {
+                    celestialBodyManager.update(delta);
+                }
+                
+                // Update coordinates display
+                if (typeof spaceship !== 'undefined' && spaceship.mesh) {
+                    updateCoordinates(spaceship.mesh.position);
+                }
+                
+                // Render the scene
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+        }
+
+        init();
+
+        // --- 4. 윈도우 크기 조정 처리 ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- 3D 그래픽 로직 끝 ---
+    </script>
+</body>
+</html>

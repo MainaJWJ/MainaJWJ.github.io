@@ -1,0 +1,32 @@
+{
+  "name": "Pluto",
+  "type": "dwarf_planet",
+  "model": {
+    "file": "model/pluto/pluto.glb",
+    "scale": 10.56,
+    "initialRotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "movement": {
+    "orbit": {
+      "target": "Sun",
+      "distance": 7500,
+      "speed": 0.000003,
+      "inclination": 17.2
+    },
+    "rotation": {
+      "axis": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "speed": 0.001
+    }
+  },
+  "animation": {
+    "enabled": false
+  }
+}
