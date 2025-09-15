@@ -1,0 +1,53 @@
+/* 바탕화면 아이콘 스타일 */
+
+#desktop-icons {
+  position: absolute;
+  top: 20px;
+  left: 10px;
+  z-index: 10;
+}
+
+#desktop-icons-col2 {
+  position: absolute;
+  top: 20px;
+  left: 90px; /* 두 번째 열의 가로 위치 */
+  z-index: 10;
+}
+
+.desktop-icon {
+  width: 80px; /* 아이콘 너비 */
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none; /* 텍스트 선택 방지 */
+}
+
+.desktop-icon img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+}
+
+.desktop-icon span {
+  font-family: 'Tahoma', sans-serif; /* 윈도우 XP 기본 폰트 */
+  font-size: 11px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* 텍스트 그림자 */
+  padding: 2px 4px;
+  text-align: center;
+  border-radius: 3px;
+}
+
+/* 아이콘 선택 시 텍스트 배경 스타일 */
+.desktop-icon.selected span {
+  background-color: #0058EB;
+}
+
+/* 드래그 선택 상자 스타일 */
+.selection-box {
+  position: absolute;
+  border: 1px dotted #000000;
+  z-index: 100;
+}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!-- Windows XP 데스크톱 구현 파일 -->
+<!-- 이 파일은 Windows XP 운영체제의 데스크톱 환경을 웹에서 재현한 HTML 파일입니다. -->
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows XP Rebuild</title>
+    <link rel="stylesheet" href="./windowManager.css">
+    <link rel="stylesheet" href="./desktop-icons.css">
+    <!-- ====================================================================== -->
+    <!-- CSS 스타일 정의 -->
+    <!-- ====================================================================== -->
+    <style>
+        /* 기본 body 스타일 설정 */
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            /* Windows XP 바탕화면 배경 설정 */
+            background: #5A7EDC url('../image/wallpaper.bmp') no-repeat center center fixed;
+            background-size: cover;
+        }
+        
+        /* 데스크톱 영역 스타일 */
+        #desktop-area {
+            /* 작업표시줄 높이(30px)를 제외한 전체 높이 */
+            width: calc(100% - 40px); /* 오른쪽에 40픽셀 여유 공간 확보 */
+            height: calc(100vh - 30px);
+            position: relative;
+            padding: 20px;
+            margin-right: 40px; /* 오른쪽 여백 추가 */
+        }
+        
+        /* 작업표시줄 컨테이너 스타일 */
+        #taskbar-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            z-index: 1000;
+        }
+        
+        /* 작업표시줄 iframe 스타일 */
+        #taskbar-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body id="desktop-body">
+    <!-- ====================================================================== -->
+    <!-- HTML 구조 정의 -->
+    <!-- ====================================================================== -->
+    <!-- 데스크톱 영역 -->
+    <div id="desktop-area">
+        <!-- 아이콘들이 동적으로 추가될 컨테이너 -->
+        <div id="desktop-icons"></div>
+        <div id="desktop-icons-col2"></div>
+    </div>
+    
+    <!-- 작업표시줄 컨테이너 -->
+    <div id="taskbar-container">
+        <iframe id="taskbar-frame" src="taskbar.html"></iframe>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- JavaScript 로직 -->
+    <!-- ====================================================================== -->
+    <script type="module" src="./appengine.js"></script>
+    <script type="module">
+        // StartMenu 모듈 가져오기
+        import startMenu from './startMenu.js';
+        // WindowManager 모듈 가져오기 (새로 추가됨)
+        import windowManager from './windowManager.js';
+        
+        // DOM 로드 완료 후 실행
+        // 모든 DOM 요소가 준비된 후에 이벤트 리스너를 등록합니다.
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM 요소들 참조
+            const taskbarFrame = document.getElementById('taskbar-frame');
+            const desktopArea = document.getElementById('desktop-area');
+            
+            // ======================================================================
+            // 데스크톱 영역 클릭 이벤트 처리
+            // ======================================================================
+            // 데스크톱 영역 클릭 이벤트 리스너
+            // 데스크톱의 빈 공간을 클릭하면 모든 창을 비활성화합니다.
+            desktopArea.addEventListener('click', (e) => {
+                // 데스크톱 영역을 직접 클릭한 경우에만 처리
+                // 아이콘이나 다른 요소를 클릭한 경우에는 처리하지 않습니다.
+                if (e.target === desktopArea) {
+                    // 모든 창 비활성화 로직은 appengine.js에서 처리 예정
+                    
+                    // 작업표시줄에 모든 탭 비활성화 요청
+                    // 작업표시줄의 모든 탭을 비활성화된 상태로 표시합니다.
+                    taskbarFrame.contentWindow.postMessage({
+                        type: 'deactivateAllTaskbarTabs'
+                    }, '*');
+                    
+                    // 시작 메뉴 닫기
+                    startMenu.close();
+                }
+            });
+            
+            // ======================================================================
+            // 메시지 이벤트 처리 (작업표시줄과의 통신)
+            // ======================================================================
+            // 부모 창(현재 창)에서 메시지 수신 이벤트 리스너
+            // 작업표시줄 탭 클릭 등의 이벤트를 수신하여 적절한 동작을 수행합니다.
+            window.addEventListener('message', (event) => {
+                // 수신된 메시지 데이터
+                const data = event.data;
+                
+                // 메시지 타입에 따라 적절한 동작 수행
+                switch (data.type) {
+                    case 'openStartMenu':
+                        // 시작 메뉴 열기 요청
+                        startMenu.toggle();
+                        break;
+                    case 'taskbarTabClick':
+                        // 작업표시줄 탭 클릭: 해당 창을 포커스 또는 최소화
+                        windowManager.handleTaskbarTabClick(data.windowId);
+                        break;
+                }
+            });
+            
+            // ======================================================================
+            // 창 포커스 이벤트 처리
+            // ======================================================================
+            // WindowManager에서 발생하는 창 포커스 이벤트 리스너
+            // WindowManager에서 창이 포커스될 때 작업표시줄 탭도 함께 활성화합니다.
+            window.addEventListener('windowFocus', (event) => {
+                // 포커스된 창의 ID
+                const windowId = event.detail.windowId;
+                // 작업표시줄 탭 활성화 요청
+                // 해당하는 작업표시줄 탭을 활성화된 상태로 표시합니다.
+                taskbarFrame.contentWindow.postMessage({
+                    type: 'activateTaskbarTab',
+                    windowId: windowId
+                }, '*');
+            });
+            
+            
+        });
+    </script>
+</body>
+</html>

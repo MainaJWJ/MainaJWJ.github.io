@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>음성 녹음기 (Windows XP 스타일)</title>
+    <style>
+        body {
+            background-color: #d4d0c8;
+            font-family: 'Tahoma', sans-serif;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            user-select: none; /* 텍스트 선택 방지 */
+        }
+
+        .recorder-window {
+            width: 380px;
+            border: 2px outset #d4d0c8;
+            background-color: #ece9d8;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            padding: 2px;
+        }
+
+        /* --- 메뉴 바 및 드롭다운 메뉴 스타일 수정 --- */
+        .menu-bar {
+            background-color: #ece9d8;
+            padding: 2px 1px;
+            border-bottom: 1px solid #808080;
+            display: flex;
+            position: relative;
+        }
+        
+        .menu-item-container {
+            position: relative;
+        }
+
+        .menu-title {
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+        
+        /* [수정됨] 마우스를 올리거나 활성화 상태일 때 파란 배경 적용 */
+        .menu-title:hover, .menu-title.active {
+             background-color: #0058d8;
+             color: white;
+        }
+
+        .dropdown-menu {
+            display: none; /* 기본적으로 숨김 */
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 1px; /* [수정됨] 메뉴 바 바로 아래에 위치하도록 살짝 내림 */
+            background-color: #ece9d8;
+            border: 1px solid #808080;
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            box-shadow: 2px 2px 3px rgba(0,0,0,0.4);
+            min-width: 150px;
+            z-index: 100;
+            padding: 2px;
+        }
+        
+        .dropdown-menu.show {
+            display: block; /* JS로 제어 */
+        }
+
+        .menu-entry {
+            padding: 3px 20px;
+            display: block;
+            white-space: nowrap;
+        }
+        
+        .menu-entry:hover {
+            background-color: #0058d8;
+            color: white;
+        }
+        
+        .menu-entry.disabled {
+            color: #808080;
+        }
+        
+        .menu-entry.disabled:hover {
+            background-color: inherit;
+            color: #808080;
+        }
+        
+        .menu-separator {
+            border-top: 1px solid #808080;
+            border-bottom: 1px solid #fff;
+            margin: 3px 2px;
+        }
+        /* --- 메뉴 바 및 드롭다운 메뉴 스타일 끝 --- */
+
+        .main-content {
+            padding: 10px;
+        }
+
+        .display-panel {
+            border: 1px inset #808080;
+            background-color: #fff;
+            height: 80px;
+            margin-bottom: 10px;
+            padding: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .waveform {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        
+        .waveform canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border: 1px inset #808080;
+            padding: 4px;
+        }
+
+        .status-bar {
+            border: 1px inset #808080;
+            padding: 2px 4px;
+            height: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .controls button {
+            width: 70px;
+            padding: 5px;
+            border: 1px solid #808080;
+            background-color: #d4d0c8;
+            box-shadow: 1px 1px #000;
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+        }
+
+        .controls button:disabled {
+            color: #808080;
+            box-shadow: none;
+        }
+        .controls button:active:not(:disabled) {
+            box-shadow: none;
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #fff;
+            border-bottom: 1px solid #fff;
+        }
+        
+        #recordBtn {
+            position: relative;
+        }
+
+        #recordBtn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: red;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="recorder-window">
+    <div class="menu-bar">
+        <div class="menu-item-container">
+            <span class="menu-title"><u>F</u>ile</span>
+            <div class="dropdown-menu">
+                <div class="menu-entry disabled">New</div>
+                <div class="menu-entry disabled">Open...</div>
+                <div class="menu-entry disabled">Save</div>
+                <div class="menu-entry disabled">Save As...</div>
+                <div class="menu-separator"></div>
+                <div class="menu-entry disabled">Properties</div>
+                <div class="menu-separator"></div>
+                <div class="menu-entry">Exit</div>
+            </div>
+        </div>
+        <div class="menu-item-container">
+            <span class="menu-title"><u>E</u>dit</span>
+             <div class="dropdown-menu">
+                <div class="menu-entry disabled">Undo</div>
+                <div class="menu-separator"></div>
+                <div class="menu-entry disabled">Cut</div>
+                <div class="menu-entry disabled">Copy</div>
+                <div class="menu-entry disabled">Paste</div>
+                <div class="menu-separator"></div>
+                <div class="menu-entry disabled">Delete</div>
+            </div>
+        </div>
+        <div class="menu-item-container">
+            <span class="menu-title"><u>V</u>iew</span>
+             <div class="dropdown-menu">
+                <div class="menu-entry">✓ Status Bar</div>
+             </div>
+        </div>
+        <div class="menu-item-container">
+             <span class="menu-title"><u>H</u>elp</span>
+             <div class="dropdown-menu">
+                <div class="menu-entry">Help Topics</div>
+                <div class="menu-separator"></div>
+                <div class="menu-entry">About Sound Recorder</div>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="display-panel">
+            <div class="waveform">
+                 <canvas id="waveformCanvas"></canvas>
+            </div>
+        </div>
+        <div class="info-panel">
+            <span id="currentTime">0.00 초</span>
+            <span id="totalTime">0.00 초</span>
+        </div>
+        <div class="controls">
+            <button id="seekBackBtn" title="뒤로 가기" disabled>|◀</button>
+            <button id="seekForwardBtn" title="앞으로 가기" disabled>▶|</button>
+            <button id="playBtn" title="재생" disabled>▶</button>
+            <button id="stopBtn" title="정지" disabled>■</button>
+            <button id="recordBtn" title="녹음"></button>
+        </div>
+         <div class="status-bar" id="statusBar">
+            준비
+        </div>
+        <audio id="audioPlayer" style="display:none;"></audio>
+    </div>
+</div>
+
+<script>
+    // --- 녹음기 기능 관련 변수 ---
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const playBtn = document.getElementById('playBtn');
+    const seekBackBtn = document.getElementById('seekBackBtn');
+    const seekForwardBtn = document.getElementById('seekForwardBtn');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const waveformCanvas = document.getElementById('waveformCanvas');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalTimeEl = document.getElementById('totalTime');
+    const statusBar = document.getElementById('statusBar');
+    
+    const canvasCtx = waveformCanvas.getContext('2d');
+    
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob;
+    let audioUrl;
+    let audioContext;
+    let analyser;
+    let dataArray;
+    let animationFrameId;
+    
+    // --- 메뉴 기능 관련 로직 ---
+    const menuTitles = document.querySelectorAll('.menu-title');
+    
+    function closeAllMenus() {
+        document.querySelectorAll('.dropdown-menu.show').forEach(openMenu => {
+            openMenu.classList.remove('show');
+        });
+        document.querySelectorAll('.menu-title.active').forEach(activeTitle => {
+            activeTitle.classList.remove('active');
+        });
+    }
+
+    menuTitles.forEach(title => {
+        title.addEventListener('click', (event) => {
+            event.stopPropagation(); // 이벤트 버블링 중단
+            const currentlyOpen = title.classList.contains('active');
+            closeAllMenus();
+            
+            if (!currentlyOpen) {
+                const dropdown = title.nextElementSibling;
+                dropdown.classList.add('show');
+                title.classList.add('active');
+            }
+        });
+    });
+    
+    // 문서 전체를 클릭했을 때 열려있는 메뉴 닫기
+    document.addEventListener('click', () => {
+        closeAllMenus();
+    });
+
+    // 드롭다운 메뉴 내부 클릭 시 메뉴가 닫히지 않도록 함
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.addEventListener('click', (event) => {
+             event.stopPropagation();
+        });
+    });
+
+
+    async function startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaStreamSource(stream);
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 2048;
+            source.connect(analyser);
+            
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                audioUrl = URL.createObjectURL(audioBlob);
+                audioPlayer.src = audioUrl;
+                audioChunks = [];
+                stopBtn.disabled = true;
+                recordBtn.disabled = false;
+                playBtn.disabled = false;
+                seekBackBtn.disabled = false;
+                seekForwardBtn.disabled = false;
+                
+                audioPlayer.onloadedmetadata = () => {
+                   totalTimeEl.textContent = `${audioPlayer.duration.toFixed(2)} 초`;
+                };
+
+                cancelAnimationFrame(animationFrameId);
+                drawStaticLine();
+                statusBar.textContent = '녹음 완료. 재생 가능.';
+            };
+
+            mediaRecorder.start();
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            playBtn.disabled = true;
+            seekBackBtn.disabled = true;
+            seekForwardBtn.disabled = true;
+            statusBar.textContent = '녹음 중...';
+            drawWaveform();
+
+        } catch (err) {
+            console.error("마이크 접근 오류:", err);
+            statusBar.textContent = '오류: 마이크에 접근할 수 없습니다.';
+        }
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+    }
+
+    function playAudio() {
+        audioPlayer.play();
+        playBtn.disabled = true;
+        stopBtn.disabled = false;
+        statusBar.textContent = '재생 중...';
+        
+        audioPlayer.ontimeupdate = () => {
+            currentTimeEl.textContent = `${audioPlayer.currentTime.toFixed(2)} 초`;
+        };
+
+        audioPlayer.onended = () => {
+            playBtn.disabled = false;
+            stopBtn.disabled = true;
+            currentTimeEl.textContent = '0.00 초';
+            statusBar.textContent = '재생 완료.';
+        };
+    }
+    
+    function stopPlayback() {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        playBtn.disabled = false;
+        stopBtn.disabled = true;
+        statusBar.textContent = '재생 정지.';
+    }
+
+    function seek(amount) {
+        if (audioPlayer.duration) {
+            audioPlayer.currentTime = Math.max(0, Math.min(audioPlayer.duration, audioPlayer.currentTime + amount));
+        }
+    }
+    
+    function drawWaveform() {
+        animationFrameId = requestAnimationFrame(drawWaveform);
+        analyser.getByteTimeDomainData(dataArray);
+
+        canvasCtx.fillStyle = 'rgb(255, 255, 255)';
+        canvasCtx.fillRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = 'rgb(0, 128, 0)';
+        canvasCtx.beginPath();
+
+        const sliceWidth = waveformCanvas.width * 1.0 / analyser.frequencyBinCount;
+        let x = 0;
+
+        for (let i = 0; i < analyser.frequencyBinCount; i++) {
+            const v = dataArray[i] / 128.0;
+            const y = v * waveformCanvas.height / 2;
+
+            if (i === 0) {
+                canvasCtx.moveTo(x, y);
+            } else {
+                canvasCtx.lineTo(x, y);
+            }
+            x += sliceWidth;
+        }
+
+        canvasCtx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
+        canvasCtx.stroke();
+    }
+    
+    function drawStaticLine() {
+        canvasCtx.fillStyle = 'rgb(255, 255, 255)';
+        canvasCtx.fillRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = 'rgb(0, 128, 0)';
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(0, waveformCanvas.height / 2);
+        canvasCtx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
+        canvasCtx.stroke();
+    }
+
+    recordBtn.addEventListener('click', startRecording);
+    stopBtn.addEventListener('click', () => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            stopRecording();
+        } else if (!audioPlayer.paused) {
+            stopPlayback();
+        }
+    });
+    playBtn.addEventListener('click', playAudio);
+    seekBackBtn.addEventListener('click', () => seek(-5));
+    seekForwardBtn.addEventListener('click', () => seek(5));
+    
+    window.onload = () => {
+        drawStaticLine();
+    }
+</script>
+
+</body>
+</html>
