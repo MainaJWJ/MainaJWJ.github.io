@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>글 수정 - 커뮤니티 게시판</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="index.html" class="site-title"><h1>커뮤니티 게시판</h1></a>
+        </header>
+
+        <div class="form-container">
+            <h2 id="edit-title">글 수정</h2>
+            <form id="edit-form">
+                <div class="form-group">
+                    <label for="post-title">제목</label>
+                    <input type="text" id="post-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="post-content">내용</label>
+                    <textarea id="post-content" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <a id="cancel-button" href="index.html" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary">수정하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/posts';
+        const editForm = document.getElementById('edit-form');
+        const postTitleInput = document.getElementById('post-title');
+        const postContentInput = document.getElementById('post-content');
+        const editTitle = document.getElementById('edit-title');
+        const cancelButton = document.getElementById('cancel-button');
+
+        const params = new URLSearchParams(window.location.search);
+        const postId = params.get('id');
+        const currentBoard = params.get('board') || 'board1';
+
+        async function fetchPostData() {
+            if (!postId) {
+                alert('잘못된 접근입니다.');
+                window.location.href = `index.html?board=${currentBoard}`;
+                return;
+            }
+            try {
+                const response = await fetch(`${API_URL}/${postId}?board=${currentBoard}`);
+                if (!response.ok) throw new Error('게시글을 찾을 수 없습니다.');
+                const post = await response.json();
+                postTitleInput.value = post.title;
+                postContentInput.value = post.content;
+                editTitle.textContent = `글 수정 (${currentBoard === 'board1' ? '게시판 1' : '게시판 2'})`;
+                cancelButton.href = `view.html?board=${currentBoard}&id=${postId}`;
+            } catch (error) {
+                alert(error.message);
+                window.location.href = `index.html?board=${currentBoard}`;
+            }
+        }
+
+        editForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const title = postTitleInput.value;
+            const content = postContentInput.value;
+
+            try {
+                const response = await fetch(`${API_URL}/${postId}?board=${currentBoard}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content }),
+                });
+                if (response.ok) {
+                    window.location.href = `view.html?board=${currentBoard}&id=${postId}`;
+                } else {
+                    alert('게시글 수정에 실패했습니다.');
+                }
+            } catch (error) {
+                alert('수정 중 오류가 발생했습니다.');
+            }
+        });
+
+        fetchPostData();
+    </script>
+</body>
+</html>

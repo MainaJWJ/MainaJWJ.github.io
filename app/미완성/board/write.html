@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>새 글 작성 - 커뮤니티 게시판</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="index.html" class="site-title"><h1>커뮤니티 게시판</h1></a>
+        </header>
+
+        <div class="form-container">
+            <h2 id="write-title">새 글 작성</h2>
+            <form id="post-form">
+                <div class="form-group">
+                    <label for="post-title">제목</label>
+                    <input type="text" id="post-title" placeholder="제목을 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <label for="post-content">내용</label>
+                    <textarea id="post-content" placeholder="내용을 입력하세요" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <a id="list-button" href="index.html" class="btn btn-secondary">목록으로</a>
+                    <button type="submit" class="btn btn-primary">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/posts';
+        const postForm = document.getElementById('post-form');
+        const writeTitle = document.getElementById('write-title');
+        const listButton = document.getElementById('list-button');
+
+        const params = new URLSearchParams(window.location.search);
+        const currentBoard = params.get('board') || 'board1';
+
+        // 동적 UI 업데이트
+        writeTitle.textContent = `새 글 작성 (${currentBoard === 'board1' ? '게시판 1' : '게시판 2'})`;
+        listButton.href = `index.html?board=${currentBoard}`;
+
+        postForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+
+            try {
+                const response = await fetch(`${API_URL}?board=${currentBoard}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content }),
+                });
+                if (response.ok) {
+                    window.location.href = `index.html?board=${currentBoard}`;
+                } else {
+                    alert('게시글 저장에 실패했습니다.');
+                }
+            } catch (error) {
+                alert('저장 중 오류가 발생했습니다.');
+            }
+        });
+    </script>
+</body>
+</html>

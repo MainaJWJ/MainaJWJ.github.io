@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>커뮤니티 게시판</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .board-tabs {
+            display: flex;
+            border-bottom: 2px solid #007bff;
+            margin-bottom: 20px;
+        }
+        .board-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .board-tab.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="index.html" class="site-title"><h1>커뮤니티 게시판</h1></a>
+        </header>
+
+        <div class="board-tabs">
+            <div class="board-tab" id="tab-board1" onclick="changeBoard('board1')">게시판 1</div>
+            <div class="board-tab" id="tab-board2" onclick="changeBoard('board2')">게시판 2</div>
+        </div>
+
+        <div class="header-actions">
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="제목으로 검색...">
+                <button id="search-button" class="btn btn-primary">검색</button>
+            </div>
+            <a id="write-button" href="write.html" class="btn btn-primary">새 글 작성</a>
+        </div>
+
+        <table class="post-table">
+            <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>제목</th>
+                    <th>작성일</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="posts-list"></tbody>
+        </table>
+        
+        <div id="pagination" class="pagination"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/posts';
+        const postsListBody = document.getElementById('posts-list');
+        const paginationDiv = document.getElementById('pagination');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const writeButton = document.getElementById('write-button');
+
+        let currentBoard = 'board1';
+        let currentPage = 1;
+        const limit = 10;
+
+        function getBoardFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('board') || 'board1';
+        }
+
+        function changeBoard(board) {
+            currentBoard = board;
+            window.history.pushState({}, '', `?board=${board}`);
+            updateActiveTab();
+            fetchPosts(1, '');
+            writeButton.href = `write.html?board=${currentBoard}`;
+        }
+
+        function updateActiveTab() {
+            document.getElementById('tab-board1').classList.toggle('active', currentBoard === 'board1');
+            document.getElementById('tab-board2').classList.toggle('active', currentBoard === 'board2');
+        }
+
+        async function fetchPosts(page = 1, search = '') {
+            try {
+                const response = await fetch(`${API_URL}?board=${currentBoard}&page=${page}&limit=${limit}&search=${search}`);
+                const data = await response.json();
+                const { posts, totalPages, currentPage: newCurrentPage } = data;
+                currentPage = newCurrentPage;
+
+                postsListBody.innerHTML = '';
+                if (posts.length === 0) {
+                    postsListBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">게시글이 없습니다.</td></tr>';
+                } else {
+                    posts.forEach((post, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="post-id">${(index + 1) + (currentPage - 1) * limit}</td>
+                            <td class="post-title"><a href="view.html?board=${currentBoard}&id=${post.id}">${post.title}</a></td>
+                            <td class="post-date">${new Date(post.createdAt).toLocaleDateString()}</td>
+                            <td class="post-actions">
+                                <button class="btn btn-secondary" onclick="editPost(${post.id})">수정</button>
+                                <button class="btn btn-danger" onclick="deletePost(${post.id})">삭제</button>
+                            </td>
+                        `;
+                        postsListBody.appendChild(row);
+                    });
+                }
+                renderPagination(totalPages, currentPage);
+            } catch (error) {
+                console.error(error);
+                postsListBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">게시글을 불러올 수 없습니다.</td></tr>';
+            }
+        }
+
+        function renderPagination(totalPages, currentPage) {
+            paginationDiv.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => fetchPosts(i, searchInput.value));
+                paginationDiv.appendChild(pageButton);
+            }
+        }
+
+        searchButton.addEventListener('click', () => {
+            fetchPosts(1, searchInput.value);
+        });
+        searchInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                fetchPosts(1, searchInput.value);
+            }
+        });
+
+        function editPost(postId) {
+            window.location.href = `edit.html?board=${currentBoard}&id=${postId}`;
+        }
+
+        async function deletePost(postId) {
+            if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+                try {
+                    const response = await fetch(`${API_URL}/${postId}?board=${currentBoard}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        fetchPosts(currentPage, searchInput.value);
+                    } else {
+                        alert('삭제에 실패했습니다.');
+                    }
+                } catch (error) {
+                    alert('삭제 중 오류가 발생했습니다.');
+                }
+            }
+        }
+
+        // Initial Load
+        currentBoard = getBoardFromURL();
+        updateActiveTab();
+        fetchPosts(currentPage, '');
+        writeButton.href = `write.html?board=${currentBoard}`;
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>글 보기 - 커뮤니티 게시판</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="index.html" class="site-title"><h1>커뮤니티 게시판</h1></a>
+        </header>
+
+        <div id="post-view">
+            <div class="post-view-header">
+                <h2 class="post-view-title"></h2>
+                <p class="post-view-meta"></p>
+            </div>
+            <div class="post-view-content"></div>
+        </div>
+
+        <div class="post-view-actions">
+            <a id="list-button" href="index.html" class="btn btn-secondary">목록</a>
+            <button id="edit-button" class="btn btn-primary">수정</button>
+            <button id="delete-button" class="btn btn-danger">삭제</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/posts';
+        const postViewDiv = document.getElementById('post-view');
+        const editButton = document.getElementById('edit-button');
+        const deleteButton = document.getElementById('delete-button');
+        const listButton = document.getElementById('list-button');
+
+        const params = new URLSearchParams(window.location.search);
+        const postId = params.get('id');
+        const currentBoard = params.get('board') || 'board1';
+
+        async function fetchPost() {
+            if (!postId) {
+                alert('잘못된 접근입니다.');
+                window.location.href = `index.html?board=${currentBoard}`;
+                return;
+            }
+            try {
+                const response = await fetch(`${API_URL}/${postId}?board=${currentBoard}`);
+                if (!response.ok) throw new Error('게시글을 찾을 수 없습니다.');
+                const post = await response.json();
+                renderPost(post);
+            } catch (error) {
+                alert(error.message);
+                window.location.href = `index.html?board=${currentBoard}`;
+            }
+        }
+
+        function renderPost(post) {
+            document.title = `${post.title} - 커뮤니티 게시판`;
+            postViewDiv.querySelector('.post-view-title').textContent = post.title;
+            postViewDiv.querySelector('.post-view-meta').textContent = `작성일: ${new Date(post.createdAt).toLocaleString()}`;
+            postViewDiv.querySelector('.post-view-content').innerHTML = post.content.replace(/\n/g, '<br>');
+            listButton.href = `index.html?board=${currentBoard}`;
+        }
+
+        editButton.addEventListener('click', () => {
+            window.location.href = `edit.html?board=${currentBoard}&id=${postId}`;
+        });
+
+        deleteButton.addEventListener('click', async () => {
+            if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+                try {
+                    const response = await fetch(`${API_URL}/${postId}?board=${currentBoard}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        alert('게시글이 삭제되었습니다.');
+                        window.location.href = `index.html?board=${currentBoard}`;
+                    } else {
+                        alert('삭제에 실패했습니다.');
+                    }
+                } catch (error) {
+                    alert('삭제 중 오류가 발생했습니다.');
+                }
+            }
+        });
+
+        fetchPost();
+    </script>
+</body>
+</html>
