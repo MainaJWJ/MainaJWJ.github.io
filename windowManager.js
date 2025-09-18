@@ -1,6 +1,13 @@
 // 창 관리 모듈
 // 이 모듈은 Windows XP 스타일의 창 생성 및 관리를 담당합니다.
 
+// 역할: 일반 창 관리자 (창 모드 전용)
+// 책임:
+// 1. 일반적인 창(프로그램)들을 생성하고 관리함
+// 2. 창을 이동시키고, 크기를 조절하고, 최대화/최소화함
+// 3. 창에 제목 표시줄, 크기 조절 핸들 등을 붙여줌
+// 4. 크기 조절이 불가능한 창도 처리할 수 있음
+
 // =============================================================================
 // 상수 및 전역 설정
 // =============================================================================
@@ -44,12 +51,14 @@ class WindowManager {
         
         // 창의 위치와 크기 설정 (기본값 또는 옵션값 사용)
         windowEl.style.cssText = `width: ${options.width || 660}px; height: ${options.height || 500}px; position: absolute; top: 40px; left: 250px; display: flex; flex-direction: column;`;
+        
         // display: flex; flex-direction: column; 추가 설명:
         // - display: flex; 는 windowEl을 플렉스 컨테이너로 만듭니다.
         // - flex-direction: column; 은 플렉스 요소들을 수직 방향으로 배치합니다.
         // 이를 통해 내부 window-body의 flex-grow: 1 스타일이 정상적으로 동작하여
         // window-body가 창 높이를 채우고, 그 안의 iframe이 window-body를 100% 채우도록 합니다.
         // @@@@@ 폴더창 내부 꽉 차게 하는 코드@@@@@
+        
         // 창의 HTML 구조 정의
         // 제목 표시줄과 iframe 포함
         windowEl.innerHTML = `
@@ -66,6 +75,7 @@ class WindowManager {
                 <iframe src="${options.iframeSrc}" style="width:100%; height:100%; border:0;"></iframe>
             </div>
             <!-- 크기 조절 핸들 추가 -->
+            ${options.resizable !== false ? `
             <div class="resize-handle resize-nw"></div>
             <div class="resize-handle resize-ne"></div>
             <div class="resize-handle resize-sw"></div>
@@ -74,6 +84,7 @@ class WindowManager {
             <div class="resize-handle resize-s"></div>
             <div class="resize-handle resize-w"></div>
             <div class="resize-handle resize-e"></div>
+            ` : ''}
         `;
         
         // 데스크톱 영역에 창 추가
@@ -85,7 +96,8 @@ class WindowManager {
             element: windowEl,
             title: options.title,
             minimized: false,
-            maximized: false
+            maximized: false, // 기본적으로 최대화되지 않은 상태
+            resizable: options.resizable !== false // 크기 조절 가능 여부 (기본값은 true)
         };
         this.windows.push(windowInfo);
         
@@ -100,8 +112,10 @@ class WindowManager {
         // 창을 최상단으로 올리고 포커스
         this.focusWindow(windowId);
         
-        // 크기 조절 기능 추가
-        this.addResizeHandles(windowEl);
+        // 크기 조절 기능 추가 (크기 조절이 가능한 경우)
+        if (options.resizable !== false) {
+            this.addResizeHandles(windowEl);
+        }
         
         // 창 이동 기능 추가
         this.addWindowDrag(windowEl);
@@ -180,6 +194,11 @@ class WindowManager {
     toggleMaximizeWindow(windowId) {
         const windowInfo = this.windows.find(w => w.id === windowId);
         if (!windowInfo) return;
+
+        // 크기 조절이 불가능한 창이면 아무 동작도 하지 않음
+        if (!windowInfo.resizable) {
+            return;
+        }
 
         const windowEl = windowInfo.element;
 
@@ -507,6 +526,13 @@ class WindowManager {
             
             // 현재 창 ID를 찾아서 최대화 토글
             const windowId = windowEl.id;
+            
+            // 크기 조절이 불가능한 창이면 아무 동작도 하지 않음
+            const windowInfo = this.windows.find(w => w.id === windowId);
+            if (windowInfo && !windowInfo.resizable) {
+                return;
+            }
+            
             this.toggleMaximizeWindow(windowId);
         });
         
