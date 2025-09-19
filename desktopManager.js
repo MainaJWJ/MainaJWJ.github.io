@@ -77,6 +77,8 @@ const DESKTOP_ICONS_COL2 = [
   }
 ];
 
+
+
 // 세 번째 열 아이콘
 const DESKTOP_ICONS_COL3 = [
   {
@@ -103,6 +105,22 @@ const DESKTOP_ICONS_COL3 = [
     id: 'neumorphic-elements-copy',
     title: 'Neumorphic UI',
     iconUrl: './image/mspaint.png'
+  },
+  // 전체화면 앱 아이콘 추가
+  {
+    id: 'logon',
+    title: 'Logon',
+    iconUrl: './image/logoff.png'
+  },
+  {
+    id: 'flower',
+    title: 'Flower',
+    iconUrl: './image/protect.png'
+  },
+  {
+    id: 'pipes',
+    title: 'Pipes',
+    iconUrl: './image/protect.png'
   }
 ];
 
@@ -209,7 +227,7 @@ function initializeDesktop() {
     
     // Enter 키: 선택된 아이콘 실행
     if (e.key === 'Enter' && selectedIcon) {
-      const iconData = [...DESKTOP_ICONS, ...DESKTOP_ICONS_COL2].find(icon => icon.id === selectedIcon.id);
+      const iconData = [...DESKTOP_ICONS, ...DESKTOP_ICONS_COL2, ...DESKTOP_ICONS_COL3].find(icon => icon.id === selectedIcon.id);
       if (iconData) {
         appLauncher.launchApp(iconData);
       }

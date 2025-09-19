@@ -6,12 +6,33 @@
 // 1. 전체 화면을 차지하는 앱(화면보호기, 영화 플레이어 등)을 관리함
 // 2. 제목 표시줄 없이 화면 전체를 사용함
 // 3. ESC 키를 누르면 종료됨
-// 4. 일반 창과는 다른 방식으로 동작함
+// 4. 앱 내부에서 사용자 입력을 감지하면 종료됨 (postMessage를 통해)
+// 5. 일반 창과는 다른 방식으로 동작함
 
 class FullscreenAppManager {
   constructor() {
     // 관리되는 모든 전체화면 앱 목록
     this.windows = [];
+    
+    // message 이벤트 리스너 등록 (한 번만 등록)
+    this.handleMessage = this.handleMessage.bind(this);
+    window.addEventListener('message', this.handleMessage);
+  }
+  
+  // message 이벤트 처리
+  handleMessage(event) {
+    // 메시지 데이터 확인
+    const data = event.data;
+    
+    // type이 'exitFullscreenApp'인 메시지를 받았을 때
+    if (data && data.type === 'exitFullscreenApp') {
+      // 현재 활성화된 전체화면 앱을 찾아서 종료
+      // (가장 최근에 생성된 전체화면 앱을 종료하도록 가정)
+      const latestWindow = this.windows[this.windows.length - 1];
+      if (latestWindow) {
+        this.closeWindow(latestWindow.id);
+      }
+    }
   }
   
   // 전체화면 앱 실행

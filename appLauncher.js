@@ -122,13 +122,26 @@ const APP_LAUNCH_OPTIONS = {
     height: 500,
     iconUrl: './image/mspaint.png'
   },
-  // 전체화면 앱 예시
-  // fullscreen: true 속성이 있으면 전체화면 앱으로 처리됨
-  'fullscreen-app': {
-    title: 'Fullscreen App',
-    iframeSrc: './app/fullscreen.html',
+  // 로그온 앱
+  'logon': {
+    title: 'Logon',
+    iframeSrc: './app/logon.html',
     fullscreen: true,              // 전체화면 모드 여부
-    iconUrl: './image/fullscreen.png'
+    iconUrl: './image/logoff.png'
+  },
+  // Flower 화면보호기 앱
+  'flower': {
+    title: 'Flower Screensaver',
+    iframeSrc: './app/flower/index.html',
+    fullscreen: true,              // 전체화면 모드 여부
+    iconUrl: './image/protect.png'
+  },
+  // Pipes 화면보호기 앱
+  'pipes': {
+    title: 'Pipes Screensaver',
+    iframeSrc: './app/pipes/index.html',
+    fullscreen: true,              // 전체화면 모드 여부
+    iconUrl: './image/protect.png'
   },
   // 크기조절 불가능한 앱 예시
   // resizable: false 속성이 있으면 크기 조절 불가능한 앱으로 처리됨
