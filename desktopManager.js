@@ -77,6 +77,35 @@ const DESKTOP_ICONS_COL2 = [
   }
 ];
 
+// 세 번째 열 아이콘
+const DESKTOP_ICONS_COL3 = [
+  {
+    id: 'solar-system-copy',
+    title: 'Solar System',
+    iconUrl: './image/windowsearth.png'
+  },
+  {
+    id: 'saturn-copy',
+    title: 'Saturn',
+    iconUrl: './image/earth.png'
+  },
+  {
+    id: 'recorder-copy',
+    title: 'Recorder',
+    iconUrl: './image/mediaplayer.png'
+  },
+  {
+    id: 'creative-cloud-copy',
+    title: 'Creative Cloud',
+    iconUrl: './image/Photoshop.png'
+  },
+  {
+    id: 'neumorphic-elements-copy',
+    title: 'Neumorphic UI',
+    iconUrl: './image/mspaint.png'
+  }
+];
+
 console.log('desktopManager.js loaded');
 
 /**
@@ -86,9 +115,10 @@ console.log('desktopManager.js loaded');
 function initializeDesktop() {
   const container1 = document.getElementById('desktop-icons');
   const container2 = document.getElementById('desktop-icons-col2');
+  const container3 = document.getElementById('desktop-icons-col3');
   const desktopArea = document.getElementById('desktop-area');
 
-  if (!container1 || !container2 || !desktopArea) {
+  if (!container1 || !container2 || !container3 || !desktopArea) {
     console.error('필수 데스크톱 요소를 찾을 수 없습니다.');
     return;
   }
@@ -306,6 +336,7 @@ function initializeDesktop() {
   // --- 아이콘 렌더링 ---
   container1.innerHTML = '';
   container2.innerHTML = '';
+  container3.innerHTML = '';
 
   DESKTOP_ICONS.forEach(iconData => {
     container1.appendChild(createIconElement(iconData));
@@ -313,6 +344,10 @@ function initializeDesktop() {
 
   DESKTOP_ICONS_COL2.forEach(iconData => {
     container2.appendChild(createIconElement(iconData));
+  });
+
+  DESKTOP_ICONS_COL3.forEach(iconData => {
+    container3.appendChild(createIconElement(iconData));
   });
 
   // 렌더링 후 아이콘 위치 정보 캐싱
@@ -334,7 +369,8 @@ function initializeDesktop() {
 function getDesktopIcons() {
   return {
     leftColumn: DESKTOP_ICONS,
-    rightColumn: DESKTOP_ICONS_COL2
+    rightColumn: DESKTOP_ICONS_COL2,
+    thirdColumn: DESKTOP_ICONS_COL3
   };
 }
 

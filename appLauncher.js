@@ -86,6 +86,42 @@ const APP_LAUNCH_OPTIONS = {
     height: 500,
     iconUrl: './image/mspaint.png'
   },
+  // 세 번째 열 아이콘을 위한 앱 실행 옵션 복사
+  'solar-system-copy': {
+    title: 'Solar System',
+    iframeSrc: './app/Solar System.html',
+    width: 800,
+    height: 600,
+    iconUrl: './image/windowsearth.png'
+  },
+  'saturn-copy': {
+    title: 'Saturn',
+    iframeSrc: './app/saturn.html',
+    width: 800,
+    height: 600,
+    iconUrl: './image/earth.png'
+  },
+  'recorder-copy': {
+    title: 'Recorder',
+    iframeSrc: './app/recorder.html',
+    width: 400,
+    height: 300,
+    iconUrl: './image/mediaplayer.png'
+  },
+  'creative-cloud-copy': {
+    title: 'Glassmorphism Creative Cloud',
+    iframeSrc: './app/Glassmorphism Creative Cloud.html',
+    width: 700,
+    height: 500,
+    iconUrl: './image/Photoshop.png'
+  },
+  'neumorphic-elements-copy': {
+    title: 'Neumorphic Elements',
+    iframeSrc: './app/Neumorphic Elements.html',
+    width: 600,
+    height: 500,
+    iconUrl: './image/mspaint.png'
+  },
   // 전체화면 앱 예시
   // fullscreen: true 속성이 있으면 전체화면 앱으로 처리됨
   'fullscreen-app': {
