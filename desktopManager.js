@@ -107,11 +107,13 @@ const DESKTOP_ICONS_COL3 = [
     iconUrl: './image/mspaint.png'
   },
   // 전체화면 앱 아이콘 추가
+  /*
   {
     id: 'logon',
     title: 'Logon',
     iconUrl: './image/logoff.png'
   },
+  */
   {
     id: 'flower',
     title: 'Flower',

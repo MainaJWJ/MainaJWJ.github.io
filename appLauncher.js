@@ -122,13 +122,6 @@ const APP_LAUNCH_OPTIONS = {
     height: 500,
     iconUrl: './image/mspaint.png'
   },
-  // 로그온 앱
-  'logon': {
-    title: 'Logon',
-    iframeSrc: './app/logon.html',
-    fullscreen: true,              // 전체화면 모드 여부
-    iconUrl: './image/logoff.png'
-  },
   // Flower 화면보호기 앱
   'flower': {
     title: 'Flower Screensaver',

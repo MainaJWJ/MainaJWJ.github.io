@@ -88,6 +88,7 @@
             width: 32px; 
             height: 32px; 
             margin-bottom: 8px; 
+            transition: filter 0.01s ease; /* 부드러운 필터 전환 효과 */
         }
         .com__content__right__card__text { 
             font-family: 'Tahoma', sans-serif;
@@ -100,11 +101,18 @@
             padding: 2px 4px;
         }
         
-        /* 폴더 아이콘 선택 스타일 */
+        /* 폴더 아이콘 선택 시 이미지에 파란색 필터 적용 */
+        .com__content__right__card__item.selected .com__content__right__card__img {
+            filter: sepia(95%) hue-rotate(185deg) saturate(4) brightness(0.6) opacity(0.9);
+        }
+        
+        /* 폴더 아이콘 선택 시 텍스트 스타일 */
         .com__content__right__card__item.selected .com__content__right__card__text {
-            background-color: #0058EB;
+            background-color: #000080; /* Windows 98 스타일의 진한 파란색 */
             color: white;
-            border-radius: 3px;
+            border: 1px dotted white; /* 흰색 점선 테두리 */
+            padding: 1px 3px;
+            border-radius: 0; /* 사각형 테두리 */
         }
         
         /* 드래그 선택 상자 스타일 제거 */
@@ -298,6 +306,22 @@
             });
         };
         
+        // 아이콘 위치 정보 캐싱
+        let iconRects = [];
+        const cacheIconRects = () => {
+            iconRects = [];
+            document.querySelectorAll('.com__content__right__card__item').forEach(iconEl => {
+                iconRects.push({
+                    element: iconEl,
+                    rect: iconEl.getBoundingClientRect()
+                });
+            });
+        };
+        
+        // 초기 캐싱 및 리사이즈 이벤트 등록
+        cacheIconRects();
+        window.addEventListener('resize', cacheIconRects);
+        
         // 각 폴더 아이템에 클릭 및 더블 클릭 이벤트 추가
         folderItems.forEach(item => {
             // 단일 클릭 이벤트
@@ -314,6 +338,105 @@
                 const itemName = item.querySelector('.com__content__right__card__text').textContent;
                 alert(`'${itemName}' 항목을 실행합니다.`);
             });
+        });
+        
+        // 키보드 이벤트 리스너 추가
+        document.addEventListener('keydown', (e) => {
+            // 아이콘 배열이 비어있으면 처리하지 않음
+            if (iconRects.length === 0) return;
+
+            // 현재 선택된 아이콘 찾기
+            const selectedIcon = document.querySelector('.com__content__right__card__item.selected');
+            
+            // Esc 키: 선택 해제
+            if (e.key === 'Escape') {
+                clearAllSelections();
+                return;
+            }
+            
+            // Enter 키: 선택된 아이콘 실행
+            if (e.key === 'Enter' && selectedIcon) {
+                e.stopPropagation();
+                const itemName = selectedIcon.querySelector('.com__content__right__card__text').textContent;
+                alert(`'${itemName}' 항목을 실행합니다.`);
+                return;
+            }
+            
+            // 방향키 처리
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 현재 선택된 아이콘이 없으면 첫 번째 아이콘 선택
+                if (!selectedIcon) {
+                    const firstIcon = document.querySelector('.com__content__right__card__item');
+                    if (firstIcon) {
+                        clearAllSelections();
+                        firstIcon.classList.add('selected');
+                    }
+                    return;
+                }
+                
+                // 현재 선택된 아이콘의 위치 정보 가져오기
+                const selectedRect = selectedIcon.getBoundingClientRect();
+                
+                // 방향에 따라 다음 아이콘 찾기
+                let nextIcon = null;
+                let minDistance = Infinity;
+                
+                iconRects.forEach(icon => {
+                    // 자기 자신은 제외
+                    if (icon.element === selectedIcon) return;
+                    
+                    const iconRect = icon.rect;
+                    let isValid = false;
+                    let distance = 0;
+                    
+                    // 방향키에 따라 유효한 아이콘과 거리 계산
+                    switch (e.key) {
+                        case 'ArrowUp':
+                            isValid = iconRect.bottom <= selectedRect.top;
+                            if (isValid) {
+                                distance = Math.abs(iconRect.bottom - selectedRect.top) + 
+                                          Math.abs((iconRect.left + iconRect.right) / 2 - (selectedRect.left + selectedRect.right) / 2) * 0.1;
+                            }
+                            break;
+                        case 'ArrowDown':
+                            isValid = iconRect.top >= selectedRect.bottom;
+                            if (isValid) {
+                                distance = Math.abs(iconRect.top - selectedRect.bottom) + 
+                                          Math.abs((iconRect.left + iconRect.right) / 2 - (selectedRect.left + selectedRect.right) / 2) * 0.1;
+                            }
+                            break;
+                        case 'ArrowLeft':
+                            isValid = iconRect.right <= selectedRect.left;
+                            if (isValid) {
+                                distance = Math.abs(iconRect.right - selectedRect.left) + 
+                                          Math.abs((iconRect.top + iconRect.bottom) / 2 - (selectedRect.top + selectedRect.bottom) / 2) * 0.1;
+                            }
+                            break;
+                        case 'ArrowRight':
+                            isValid = iconRect.left >= selectedRect.right;
+                            if (isValid) {
+                                distance = Math.abs(iconRect.left - selectedRect.right) + 
+                                          Math.abs((iconRect.top + iconRect.bottom) / 2 - (selectedRect.top + selectedRect.bottom) / 2) * 0.1;
+                            }
+                            break;
+                    }
+                    
+                    // 유효하고 더 가까운 아이콘이면 업데이트
+                    if (isValid && distance < minDistance) {
+                        minDistance = distance;
+                        nextIcon = icon.element;
+                    }
+                });
+                
+                // 다음 아이콘이 있으면 선택
+                if (nextIcon) {
+                    clearAllSelections();
+                    nextIcon.classList.add('selected');
+                }
+            }
         });
         
         // 빈 공간 클릭 시 선택 해제

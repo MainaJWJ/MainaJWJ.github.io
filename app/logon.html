@@ -967,7 +967,7 @@ class Login {
         ) {
             this.is_authenticated = true;
             // 로그인 성공 시 startup.wav 재생 후 부모에 메시지 전송
-            const startupAudio = new Audio('./startup.wav');
+            const startupAudio = new Audio('../audio/startup.wav');
             startupAudio.play().finally(() => {
                 if (window.parent !== window) {
                     window.parent.postMessage('logonSuccess', '*');
